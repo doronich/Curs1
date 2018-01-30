@@ -1,0 +1,214 @@
+unit Unit2;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, StdCtrls, inifiles, ColorGrd, jpeg;
+
+type
+  TFormChangeColor = class(TForm)
+    ShapeApply: TShape;
+    BckGrShape: TShape;
+    LblApply: TLabel;
+    Button1: TButton;
+    Button2: TButton;
+    CheckBox1: TCheckBox;
+    ShapeDefault: TShape;
+    LblDefault: TLabel;
+    RadioGroup1: TRadioGroup;
+    ImgBck: TImage;
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure LblApplyClick(Sender: TObject);
+    procedure BckGrShapeMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure LblDefaultClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure RadioGroup1Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure LblApplyMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure LblApplyMouseLeave(Sender: TObject);
+    procedure LblDefaultMouseLeave(Sender: TObject);
+    procedure LblDefaultMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FormChangeColor: TFormChangeColor;
+
+implementation
+
+uses Unit1, Unit3, Unit4;
+
+{$R *.dfm}
+
+
+
+procedure TFormChangeColor.Button1Click(Sender: TObject);
+begin
+if MainForm.ColorDialog1.Execute then begin
+//MainForm.BckGrShape.Brush.Color:=MainForm.ColorDialog1.Color;
+//BckGrShape.Brush.Color:=MainForm.ColorDialog1.Color;
+//Backclr:=ColorToString(MainForm.ColorDialog1.Color);
+end;
+CheckBox1.Visible:=false;
+CheckBox1.Visible:=true;
+end;
+
+procedure TFormChangeColor.Button2Click(Sender: TObject);
+begin
+if MainForm.ColorDialog1.Execute then begin
+ ShapeApply.Brush.Color:=MainForm.ColorDialog1.Color;
+ MainForm.ShapeTitle.Brush.Color:=MainForm.ColorDialog1.Color;
+ MainForm.ShapeQuit.Brush.Color:=MainForm.ColorDialog1.Color;
+ MainForm.ShapeSettings.Brush.Color:=MainForm.ColorDialog1.Color;
+ MainForm.ShapeHelp.Brush.Color:=MainForm.ColorDialog1.Color;
+ FormTeor.ShapeTitle.Brush.Color:=MainForm.ColorDialog1.Color;
+ Colr:=ColorToString(MainForm.ColorDialog1.Color);
+ ShapeDefault.Brush.Color:=MainForm.ColorDialog1.color;
+ end;
+end;
+
+procedure TFormChangeColor.LblApplyClick(Sender: TObject);
+begin
+if CheckBox1.Checked then begin
+  //MainForm.BckGrShape.Visible:=false;
+  //MainForm.BcGrImg.Visible:=true;
+  ImgBck.Visible:=true;
+  WP:=true;
+end
+else if CheckBox1.Checked=false then begin
+  //MainForm.BckGrShape.Visible:=true;
+  //MainForm.BcGrImg.Visible:=false;
+  ImgBck.Visible:=false;
+  WP:=false;
+end;
+
+  FormChangeColor.hide;
+//MainForm.AlphaBlendValue:=255;
+  MainForm.Enabled:=true;
+end;
+
+procedure TFormChangeColor.BckGrShapeMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+ReleaseCapture;
+ FormChangeColor.perform(WM_SysCommand,$F012,0);
+end;
+
+procedure TFormChangeColor.LblDefaultClick(Sender: TObject);
+begin
+  IniFile:=TiniFile.Create(extractfilepath(paramstr(0))+'Default.ini');
+//MainForm.Top:=IniFile.ReadInteger('Forminfo','Top',Top);
+//MainForm.Left:=IniFile.ReadInteger('Forminfo','Left',Left);
+
+  CurrentColor:=IniFile.ReadString('Colors','Buttons','');
+  unit1.Colr:=CurrentColor;
+  ShapeDefault.Brush.Color:=stringtocolor(CurrentColor);
+  ShapeApply.Brush.Color:=stringtocolor(CurrentColor);
+  MainForm.ShapeHelp.Brush.Color:=stringtocolor(CurrentColor);
+  MainForm.ShapeQuit.Brush.Color:=stringtocolor(CurrentColor);
+  MainForm.ShapeSettings.Brush.Color:=stringtocolor(CurrentColor);
+  MainForm.ShapeTitle.Brush.Color:=stringtocolor(CurrentColor);
+  FormTeor.ShapeTitle.Brush.Color:=stringtocolor(CurrentColor);
+  CurrentColor:=IniFile.ReadString('Colors','Back','');
+  Backclr:=CurrentColor;
+  //MainForm.BckGrShape.Brush.Color:=StringToColor(CurrentColor);
+  BckGrShape.Brush.Color:=StringToColor(CurrentColor);
+  MainForm.ChangeFont(IniFile.ReadString('Font','Style',''));
+  if IniFile.ReadBool('Colors','Wallpaper',WP) then begin
+    //MainForm.BckGrShape.Visible:=false;
+    //MainForm.BcGrImg.Visible:=true;
+    WP:=true;
+    ImgBck.Visible:=true;
+    CheckBox1.Checked:=true;
+  end
+else begin
+  //MainForm.BckGrShape.Visible:=true;
+  //MainForm.BcGrImg.Visible:=false;
+  WP:=false;
+  ImgBck.Visible:=false;
+  CheckBox1.Checked:=false;
+  end;
+  IniFile.Free;
+  CheckBox1.Hide;
+  CheckBox1.Show;
+  RadioGroup1.Hide;
+  RadioGroup1.Show;
+end;
+
+procedure TFormChangeColor.FormCreate(Sender: TObject);
+begin
+  ShapeDefault.Brush.Color:=stringtocolor(Colr);
+  ShapeApply.Brush.Color:=stringtocolor(Colr);
+  BckGrShape.Brush.Color:=StringToColor(Backclr);
+  CheckBox1.Font.Color:=$00ffffff;
+
+/////////////////////////////////////////////////
+if (FileExists('CurrentBuild.ini')) or (FileExists('Default.ini')) then  begin
+If FileExists('CurrentBuild.ini') then IniFile:=TiniFile.Create(extractfilepath(paramstr(0))+'CurrentBuild.ini')
+else IniFile:=TiniFile.Create(extractfilepath(paramstr(0))+'Default.ini');
+if IniFile.ReadBool('Colors','Wallpaper',true) then
+begin
+  WP:=true;
+  CheckBox1.Checked:=true;
+  FormChangeColor.ImgBck.Visible:=true;
+  FormChangeColor.BckGrShape.Visible:=false;
+end
+else
+  begin
+  WP:=false;
+  FormChangeColor.ImgBck.Visible:=false;
+  FormChangeColor.BckGrShape.Visible:=true;
+  FormChangeColor.CheckBox1.Checked:=false;
+  end;
+end;
+  IniFile.Free;
+  FormChangeColor.LblDefault.Font.Name:=fontNm;
+  FormChangeColor.LblApply.Font.Name:=fontNm;
+end;
+
+
+
+procedure TFormChangeColor.RadioGroup1Click(Sender: TObject);
+begin
+  if RadioGroup1.ItemIndex=0 then MainForm.ChangeFont('Century Gothic');
+  if RadioGroup1.ItemIndex=1 then MainForm.ChangeFont('Arial Narrow');
+  if RadioGroup1.ItemIndex=2 then MainForm.ChangeFont('Georgia');
+end;
+
+procedure TFormChangeColor.CheckBox1Click(Sender: TObject);
+begin
+if CheckBox1.Checked then Button1.Enabled:=false
+  else  Button1.Enabled:=true;
+end;
+
+procedure TFormChangeColor.LblApplyMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ShapeApply.Brush.Color:=$00626262;
+end;
+
+procedure TFormChangeColor.LblApplyMouseLeave(Sender: TObject);
+begin
+  ShapeApply.Brush.Color:=stringToColor(Colr);
+end;
+
+procedure TFormChangeColor.LblDefaultMouseLeave(Sender: TObject);
+begin
+  ShapeDefault.Brush.Color:=stringtoColor(Colr);
+end;
+
+procedure TFormChangeColor.LblDefaultMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ShapeDefault.Brush.Color:=$00626262;
+end;
+
+end.
